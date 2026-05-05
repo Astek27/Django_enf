@@ -8,5 +8,5 @@ urlpatterns = [
     path('', IndexView.as_view(), name='index'),
     path('catalog/', CatalogView.as_view(), name='catalog_all'),
     path('catalog/<slug:category_slug>/', CatalogView.as_view(), name='catalog'),
-    path('product/<slug:product_slug>/', ProductDetailView.as_view(), name='product_detail')
+    path('product/<slug:slug>/', ProductDetailView.as_view(), name='product_detail')
 ]

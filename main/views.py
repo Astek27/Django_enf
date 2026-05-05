@@ -1,9 +1,13 @@
+import logging
+
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import DetailView, TemplateView
 from django.template.response import TemplateResponse
 from django.db.models import Q
 from .models import Category, Product, Size
 
+
+logger = logging.getLogger(__name__)
 # Create your views here.
 class IndexView(TemplateView):
     template_name = 'main/base.html'
@@ -60,7 +64,7 @@ class CatalogView(TemplateView):
             context.update({
                 'categories': categories,
                 'products': products,
-                'current_category': current_category,
+                'current_category': category_slug,
                 'filter_params': filter_params,
                 'sizes': Size.objects.all(),
                 'search_query': query or ''
@@ -101,6 +105,7 @@ class ProductDetailView(DetailView):
         return context
     
     def get(self, *args, **kwargs):
+        self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         if self.request.headers.get('HX-Request'):
             return TemplateResponse(self.request, 'main/product_detail.html', context)
