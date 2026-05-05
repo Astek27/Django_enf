@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-from django.views.generic import TemplateView
+from django.views.generic import DetailView, TemplateView
 from django.template.response import TemplateResponse
 from django.db.models import Q
 from .models import Category, Product, Size
@@ -83,3 +83,25 @@ class CatalogView(TemplateView):
             template = 'main/filter_modal.html' if request.GET.get('show_filter') == 'true' else 'main/catalog.html'
             return TemplateResponse(request, template, context)
         return TemplateResponse(request, self.template_name, context)
+
+
+class ProductDetailView(DetailView):
+    model = Product
+    slug_field = 'slug'
+    slug_url_kwarg = 'slug'
+
+    template_name = 'main/base.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = self.get_object()
+        context["categories"] = Category.objects.all()
+        context['related_products'] = Product.objects.filter(category=product.category).exclude(id=product.id)[:4] # type: ignore
+        context['current_category'] = product.category.slug # type: ignore
+        return context
+    
+    def get(self, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        if self.request.headers.get('HX-Request'):
+            return TemplateResponse(self.request, 'main/product_detail.html', context)
+        return TemplateResponse(self.request, self.template_name, context)
